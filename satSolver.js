@@ -80,46 +80,27 @@ function checkProblemSpecification(text, clauses, variables) {
 }
 
 function nextAssignment(currentAssignment) {
-    var isFirst = true;
-    for (i = 0; i < currentAssignment.length; i++) {
-        if (currentAssignment[i] == 1) {
-            isFirst = false;
-            break;
+    var binary = "";
+    for(i = 0; i < currentAssignment.length; i++){
+        if (currentAssignment[i] == true){
+            currentAssignment[i] = 1;
+        }else{
+            currentAssignment[i] = 0;
         }
+        binary = binary.concat(currentAssignment[i]);
     }
-    if (isFirst) {
-        currentAssignment[0] = true;
-        var lengthTrue = 0;
-    } else {
-        for (i = 0; i < currentAssignment.length; i++) {
-            if (currentAssignment[currentAssignment.length - 1] === true && currentAssignment[0] == false) {
-                currentAssignment[0] == true;
-            } else if (currentAssignment[currentAssignment.length - 1] === true && currentAssignment[0] == true) {
-                for (i == 0; i < currentAssignment.length; i++) {
-                    if (currentAssignment[i] == false){
-                        currentAssignment[i] == true;
-                        currentAssignment[currentAssignment.length-1] == false;
-                        break;
-                    }
-                }
-            }else{
-                var firstTrue = " ";
-                var lastTrue = -1;
-                for (i == 0; i < currentAssignment.length; i++) {
-                    if(currentAssignment[i] == true){
-                        if (firstTrue == " "){
-                            currentAssignment = false;
-                            lastTrue = i;
-                        }else{
-                            lastTrue = i;
-                        }
-                    }
-                    if (i == currentAssignment.length - 1){
-                        currentAssignment[lastTrue+1] = true;
-                        currentAssignment[firstTrue] = false;
-                    }
-                }
-            }
+    var decimal = parseInt(binary,2);
+    decimal++;
+    var almostReady = decimal.toString(2);
+    var almostAssignment = almostAssignment.split("");
+    for (i = 0; i < almostAssignment.length; i++){
+        currentAssignment[i] = almostAssignment[i];
+    }
+    for (i = 0; i < currentAssignment.length; i++){
+        if(currentAssignment[i] == 0){
+            currentAssignment = false;
+        }else{
+            currentAssignment = true;
         }
     }
     return currentAssignment;
@@ -129,7 +110,15 @@ function  doSolve(clauses,assignment) {
     var isSat = false;
     var lastAssignment = false;
     while ((!isSat) && (!lastAssignment)) {
-
+        for (i = 0; i < assignment.length; i++){
+            if (assignment[i] == 1){
+                lastAssignment = true;
+            }else {
+                lastAssignment = false;
+                break;
+            }
+        }
+        
     }
 }
 
