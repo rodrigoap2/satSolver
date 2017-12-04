@@ -8,16 +8,16 @@ function readFormula(fileName) {
             getLine = text[i].split(" ");
         }
     }
-        var clauses = readClauses(text);
-        var variables = readVariables(clauses);
-        console.log(variables);
-        var specOk = checkProblemSpecification(text, clauses, variables);
-        var result = { 'clauses': [], 'variables': [] };
-         if (specOk) {
-            result.clauses = clauses;
-            result.variables = variables;
-         }
-        return result;
+    var clauses = readClauses(text);
+    var variables = readVariables(clauses);
+    console.log(variables);
+    var specOk = checkProblemSpecification(text, clauses, variables);
+    var result = {'clauses': [], 'variables': []};
+    if (specOk) {
+        result.clauses = clauses;
+        result.variables = variables;
+    }
+    return result;
 }
 
 function readClauses(text) {
@@ -57,7 +57,7 @@ function readVariables(clause) {
     }
     var variables = [];
     for (i = 0; i < biggestLength; i++) {
-        variables.push(0);
+        variables.push(false);
     }
     return variables;
 }
@@ -80,7 +80,57 @@ function checkProblemSpecification(text, clauses, variables) {
 }
 
 function nextAssignment(currentAssignment) {
-    
+    var isFirst = true;
+    for (i = 0; i < currentAssignment.length; i++) {
+        if (currentAssignment[i] == 1) {
+            isFirst = false;
+            break;
+        }
+    }
+    if (isFirst) {
+        currentAssignment[0] = true;
+        var lengthTrue = 0;
+    } else {
+        for (i = 0; i < currentAssignment.length; i++) {
+            if (currentAssignment[currentAssignment.length - 1] === true && currentAssignment[0] == false) {
+                currentAssignment[0] == true;
+            } else if (currentAssignment[currentAssignment.length - 1] === true && currentAssignment[0] == true) {
+                for (i == 0; i < currentAssignment.length; i++) {
+                    if (currentAssignment[i] == false){
+                        currentAssignment[i] == true;
+                        currentAssignment[currentAssignment.length-1] == false;
+                        break;
+                    }
+                }
+            }else{
+                var firstTrue = " ";
+                var lastTrue = -1;
+                for (i == 0; i < currentAssignment.length; i++) {
+                    if(currentAssignment[i] == true){
+                        if (firstTrue == " "){
+                            currentAssignment = false;
+                            lastTrue = i;
+                        }else{
+                            lastTrue = i;
+                        }
+                    }
+                    if (i == currentAssignment.length - 1){
+                        currentAssignment[lastTrue+1] = true;
+                        currentAssignment[firstTrue] = false;
+                    }
+                }
+            }
+        }
+    }
+    return currentAssignment;
+}
+
+function  doSolve(clauses,assignment) {
+    var isSat = false;
+    var lastAssignment = false;
+    while ((!isSat) && (!lastAssignment)) {
+
+    }
 }
 
 console.log(readFormula('hole1.cnf'));
