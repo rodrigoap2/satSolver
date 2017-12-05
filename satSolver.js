@@ -10,7 +10,6 @@ function readFormula(fileName) {
     }
     var clauses = readClauses(text);
     var variables = readVariables(clauses);
-    console.log(variables);
     var specOk = checkProblemSpecification(text, clauses, variables);
     var result = {'clauses': [], 'variables': []};
     if (specOk) {
@@ -81,45 +80,101 @@ function checkProblemSpecification(text, clauses, variables) {
 
 function nextAssignment(currentAssignment) {
     var binary = "";
-    for(i = 0; i < currentAssignment.length; i++){
-        if (currentAssignment[i] == true){
+    var binaryConcat = "";
+    var allZero = true;
+    var decimal;
+    for (i = 0; i < currentAssignment.length; i++) {
+        if (currentAssignment[i] == true) {
             currentAssignment[i] = 1;
-        }else{
+            allZero = false;
+        } else {
             currentAssignment[i] = 0;
         }
-        binary = binary.concat(currentAssignment[i]);
+        binary = ""+currentAssignment[i];
+        if(i != 0){
+            binary = binary.concat(binaryConcat);
+        }
+        binaryConcat = binary;
     }
-    var decimal = parseInt(binary,2);
-    decimal++;
+    if (allZero) {
+        decimal = 1;
+    } else {
+        decimal = parseInt(binary, 2);
+        decimal++;
+    }
     var almostReady = decimal.toString(2);
-    var almostAssignment = almostAssignment.split("");
-    for (i = 0; i < almostAssignment.length; i++){
-        currentAssignment[i] = almostAssignment[i];
+    var almostAssignment = almostReady.split("");
+    var f = 0;
+    for (i = almostAssignment.length-1; i >= 0; i--) {
+        currentAssignment[f] = almostAssignment[i];
+        f++;
     }
-    for (i = 0; i < currentAssignment.length; i++){
-        if(currentAssignment[i] == 0){
-            currentAssignment = false;
-        }else{
-            currentAssignment = true;
+    for (i = 0; i < currentAssignment.length; i++) {
+        if (currentAssignment[i] == 0) {
+            currentAssignment[i] = false;
+        } else {
+            currentAssignment[i] = true;
         }
     }
     return currentAssignment;
 }
 
-function  doSolve(clauses,assignment) {
+function doSolve(clauses, assignment) {
     var isSat = false;
     var lastAssignment = false;
+    var inicialClause = clauses;
     while ((!isSat) && (!lastAssignment)) {
-        for (i = 0; i < assignment.length; i++){
-            if (assignment[i] == 1){
+        for (i = 0; i < assignment.length; i++) {
+            if (assignment[i] == 1) {
                 lastAssignment = true;
-            }else {
+            } else {
                 lastAssignment = false;
                 break;
             }
         }
-        
+        for (i = 0; i < clauses.length; i++){
+            for (k = 0; k < clauses[i].length; k++){
+                var isFalse = true;
+                for (u = 1; u <= assignment.length; u++){
+                    if(Math.abs(clauses[i][k]) == u){
+                        if (clauses[i][k] == u){
+                            clauses[i][k] = assignment[u-1];
+                        }else{
+                            clauses[i][k] = (!assignment[u-1]);
+                        }
+                    }
+                }
+                if (clauses[i][k] == true){
+                    clauses[i] = true;
+                    isFalse = false;
+                    break;
+                }else if(k == clauses[i].length-1){
+                    clauses[i] = false;
+                }
+            }
+        }
+        for (i = 0; i < clauses.length; i++){
+            if (clauses[i] == false){
+                isSat = false;
+                break;
+            }else {
+                isSat = true;
+            }
+        }
+        if (!isSat && !lastAssignment) {
+            assignment = nextAssignment(assignment);
+            doSolve(inicialClause,assignment);
+        }
     }
+    var result = {'isSat' : isSat, satisfyingAssignment: null}
+    if (isSat){
+        result.satisfyingAssignment = assignment;
+    }
+    return result;
 }
 
-console.log(readFormula('hole1.cnf'));
+exports.solve = function (fileName) {
+    var formula = readFormula(fileName);
+    var result = doSolve(formula.clauses, formula.variables);
+    return result;
+}
