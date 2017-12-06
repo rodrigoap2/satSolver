@@ -9,6 +9,9 @@ function readFormula(fileName) {
     if (specOk) {
         result.clauses = clauses;
         result.variables = variables;
+    }else{
+        result.clauses = ["Numero de clausulas ou variáveis não confere"];
+        result.variables = [];
     }
     return result;
 }
@@ -109,6 +112,9 @@ function nextAssignment(currentAssignment) {
 function doSolve(clauses, assignment) {
     var isSat = false;
     var lastAssignment = false;
+    if(clauses == "Numero de clausulas ou variáveis não confere"){
+        lastAssignment = true;
+    }
     while ((!isSat) && (!lastAssignment)) {
         var clausesBoolean = [];
         var almostSat = true;
