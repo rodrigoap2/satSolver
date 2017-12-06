@@ -2,12 +2,6 @@ function readFormula(fileName) {
     var fs = require("fs");
     var data = fs.readFileSync(fileName).toString();
     var text = data.split('\n');
-    var getLine = " ";
-    for (i = 0; i < text.length; i++) {
-        if (text[i].charAt(0) == 'p') {
-            getLine = text[i].split(" ");
-        }
-    }
     var clauses = readClauses(text);
     var variables = readVariables(clauses);
     var specOk = checkProblemSpecification(text, clauses, variables);
@@ -20,22 +14,16 @@ function readFormula(fileName) {
 }
 
 function readClauses(text) {
-    var getLine = " ";
-    for (i = 0; i < text.length; i++) {
-        if (text[i].charAt(0) == 'p') {
-            getLine = text[i].split(" ");
-        }
-    }
     var array1 = [];
     var array2 = [];
-    var getLine2 = "";
+    var getLine = "";
     for (i = 0; i < text.length; i++) {
         if ((text[i].charAt(0) != 'p') && (text[i].charAt(0) != 'c')) {
-            getLine2 = text[i].split(" ");
-            for (k = 0; k < getLine2.length; k++) {
-                if (getLine2[k] != 0) {
-                    array2.push(getLine2[k]);
-                } else {
+            getLine = text[i].split(" ");
+            for (k = 0; k < getLine.length; k++) {
+                if (getLine[k] != 0 && (getLine[k] != "")) {
+                    array2.push(getLine[k]);
+                } else if (getLine[k] == "0" || getLine[k] == "0\r") {
                     array1.push(array2);
                     array2 = [];
                 }
@@ -63,18 +51,17 @@ function readVariables(clause) {
 
 function checkProblemSpecification(text, clauses, variables) {
     var getLine;
-    specOk = true;
+    var specOk = true;
     for (i = 0; i < text.length; i++) {
-        specOk = true;
         if (text[i].charAt(0) == 'p') {
             getLine = text[i].split(" ");
         }
     }
-    if (clauses.length != parseInt(getLine[3])) {
-        specOk = false;
-    } else if (variables.length != parseInt(getLine[2])) {
-        specOk = false;
-    }
+        if (clauses.length != parseInt(getLine[3])) {
+            specOk = false;
+        } else if (variables.length != parseInt(getLine[2])) {
+            specOk = false;
+        }
     return specOk;
 }
 
@@ -90,8 +77,8 @@ function nextAssignment(currentAssignment) {
         } else {
             currentAssignment[i] = 0;
         }
-        binary = ""+currentAssignment[i];
-        if(i != 0){
+        binary = "" + currentAssignment[i];
+        if (i != 0) {
             binary = binary.concat(binaryConcat);
         }
         binaryConcat = binary;
@@ -105,7 +92,7 @@ function nextAssignment(currentAssignment) {
     var almostReady = decimal.toString(2);
     var almostAssignment = almostReady.split("");
     var f = 0;
-    for (i = almostAssignment.length-1; i >= 0; i--) {
+    for (i = almostAssignment.length - 1; i >= 0; i--) {
         currentAssignment[f] = almostAssignment[i];
         f++;
     }
@@ -122,8 +109,9 @@ function nextAssignment(currentAssignment) {
 function doSolve(clauses, assignment) {
     var isSat = false;
     var lastAssignment = false;
-    var inicialClause = clauses;
     while ((!isSat) && (!lastAssignment)) {
+        var clausesBoolean = [];
+        var almostSat = true;
         for (i = 0; i < assignment.length; i++) {
             if (assignment[i] == 1) {
                 lastAssignment = true;
@@ -132,42 +120,45 @@ function doSolve(clauses, assignment) {
                 break;
             }
         }
-        for (i = 0; i < clauses.length; i++){
-            for (k = 0; k < clauses[i].length; k++){
-                var isFalse = true;
-                for (u = 1; u <= assignment.length; u++){
-                    if(Math.abs(clauses[i][k]) == u){
-                        if (clauses[i][k] == u){
-                            clauses[i][k] = assignment[u-1];
-                        }else{
-                            clauses[i][k] = (!assignment[u-1]);
+        for (i = 0; i < clauses.length; i++) {
+            for (k = 0; k < clauses[i].length; k++) {
+                var isTrue = false;
+                for (u = 1; u < assignment.length + 1; u++) {
+                    if (Math.abs(parseInt(clauses[i][k])) == u) {
+                        if (clauses[i][k] == u) {
+                            if (assignment[u - 1] == true) {
+                                clausesBoolean.push(true);
+                                isTrue = true;
+                            }
+                            break;
+                        } else {
+                            if (assignment[u - 1] == false) {
+                                clausesBoolean.push(true);
+                                isTrue = true;
+                            }
+                            break;
                         }
                     }
                 }
-                if (clauses[i][k] == true){
-                    clauses[i] = true;
-                    isFalse = false;
+                if (isTrue) {
                     break;
-                }else if(k == clauses[i].length-1){
-                    clauses[i] = false;
+                } else if (k == clauses[i].length - 1 && !isTrue) {
+                    clausesBoolean[i] = false;
+                    almostSat = false;
                 }
             }
-        }
-        for (i = 0; i < clauses.length; i++){
-            if (clauses[i] == false){
-                isSat = false;
+            if (almostSat == false) {
                 break;
-            }else {
-                isSat = true;
             }
         }
-        if (!isSat && !lastAssignment) {
+        if (!almostSat) {
             assignment = nextAssignment(assignment);
-            doSolve(inicialClause,assignment);
+        } else {
+            isSat = true;
         }
     }
-    var result = {'isSat' : isSat, satisfyingAssignment: null}
-    if (isSat){
+    var result = {'isSat': isSat, satisfyingAssignment: null}
+    if (isSat) {
         result.satisfyingAssignment = assignment;
     }
     return result;
